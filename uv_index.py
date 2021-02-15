@@ -1,5 +1,4 @@
 import requests
-import messaging.mac_messaging as msg
 import pandas as pd
 from datetime import datetime
 from dateutil import tz
@@ -171,9 +170,8 @@ fig.write_image('today_uv.jpg')
 airQuality.graph_forecast()
 
 
-answer = questionary.confirm("Send message to phone and display analytics?").ask()
+answer = questionary.confirm("display analytics?").ask()
 
 if answer == True:
-    msg.sendFile('/Users/jonathanrice/Desktop/Pyth/weather/today_uv.jpg')
     sweetviz = sv.analyze(whole_df)
     sweetviz.show_html()
