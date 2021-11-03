@@ -1,8 +1,4 @@
 import requests
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-from datetime import datetime
-from dateutil import tz
 import pandas as pd
 import json
 from get_location import Location
@@ -10,6 +6,9 @@ from get_location import Location
 import plotly.express as px
 
 class AirQualityAPI:
+    '''Communicates with the air quality management district (AQMD)
+     server and returns air quality information
+     '''
 
     def __init__(self, location):
         self.url = f'https://api.waqi.info/feed/'
@@ -28,7 +27,6 @@ class AirQualityAPI:
     def get_response(self, location):
         url = self.url + f'{location}/?token={self.token}'
         response = requests.get(url).json()
-
 
         return response
 

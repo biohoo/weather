@@ -1,24 +1,20 @@
 import requests
 import pandas as pd
 from datetime import datetime
-from dateutil import tz
-import questionary
 from get_location import Location
+import keyring
 
 import plotly.graph_objects as go
 from air_quality_index import AirQualityAPI
 
 import sweetviz as sv
 
-from_zone = tz.tzutc()
-to_zone = tz.tzlocal()
-
-location = Location()
-
-latitude, longitude = location.geolocation_dict['latitude'], location.geolocation_dict['longitude']
-city = location.geolocation_dict['city']
+l = Location()
+ld = l.geolocation_dict
 
 
+class APIQuotaReachedException(Exception):
+    pass
 
 
 class UVIndexAPI:
@@ -26,13 +22,12 @@ class UVIndexAPI:
         self.realtimeURL = 'https://api.openuv.io/api/v1/uv'
         self.forecastURL = 'https://api.openuv.io/api/v1/forecast'
 
-        self.token = 'be162556db5b654875eff1bc5c706553'
+        self.token = keyring.get_password('OpenUV API Key','openuvapi')
         self.header = {'x-access-token':self.token}
         self.latitude, self.longitude, self.altitude = (34.27, -118.83, 270)
 
         self.full_forecast = self.get_forecast()
         self.full_response = self.get_realtime_response()
-        #self.forecast_dataframe = self.get_forecasted_uv_indices()
 
     def set_token(self, new_token):
         '''
@@ -53,6 +48,9 @@ class UVIndexAPI:
 
         payload = {'lat':self.latitude, 'lng':self.longitude, 'alt':self.altitude}
         response = requests.get(url=self.realtimeURL, headers=self.header, params=payload)
+
+        if 'error' in response.json():
+            raise APIQuotaReachedException(response.json()['error'])
 
         return response.json()
 
@@ -78,8 +76,8 @@ class UVIndexAPI:
         df = pd.DataFrame(self.get_forecast()['result'])
 
         df['uv_time'] = df['uv_time'].apply(lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%S.%fZ') # To datetime
-                                            .replace(tzinfo=from_zone)  #   Explicitly state timezone = UTC
-                                            .astimezone(to_zone))       #   Convert to local (PST)
+                                            .replace(tzinfo=l.utc_time_converter)
+                                            .astimezone(l.local_time_converter))
 
         df = pd.concat([df.drop(['sun_position'], axis=1),              #   Concatenate one with sun pos. dropped
                         df['sun_position'].apply(pd.Series)], axis=1)   #   with the sun position split by dict series.
@@ -97,25 +95,23 @@ class UVIndexAPI:
 
 
 uv = UVIndexAPI()
-uv.set_location_and_altitude(latitude=latitude, longitude=longitude, altitude=0)
+uv.set_location_and_altitude(latitude=ld['latitude'], longitude=ld['longitude'], altitude=0)
 index = uv.get_uv_index()
 print(index)
 
 whole_df = uv.get_forecasted_uv_indices()
 safe_times = uv.get_safe_times()
 
-extended_cutoffs = whole_df[whole_df['uv'] > 3]
-strict_cutoffs = whole_df[whole_df['uv'] > 5]
+DANGEROUS_UV, MODERATE_UV = 5, 3
 
+extended_cutoffs = whole_df[whole_df['uv'] > MODERATE_UV]
+strict_cutoffs = whole_df[whole_df['uv'] > DANGEROUS_UV]
 
-airQuality = AirQualityAPI(city)
+airQuality = AirQualityAPI(ld['city'])
 air_quality_index = airQuality.response['data']['aqi']
 air_quality_rating, air_quality_color = airQuality.get_health_rating()
 
-
-
 fig = go.Figure(layout_yaxis_range=[0,11])
-
 
 fig.add_trace(
     go.Scatter(
@@ -138,14 +134,14 @@ fig.add_trace(
         y=safe_times.uv,
         marker=dict(
             color='rgb(51,85,255)',
-            size=20
+            size=[50 if x < MODERATE_UV else 10 for x in safe_times.uv]
         ),
         showlegend=False
     )
 )
 
 fig.update_layout(
-    title = f"UV over Time<br>City: {city}<br><b>{datetime.strftime(datetime.today(),'%d %b %Y')}</b>",
+    title = f"UV over Time<br>City: {ld['city']}<br><b>{datetime.strftime(datetime.today(), '%d %b %Y')}</b>",
     xaxis_title="Time",
     yaxis_title="UV Index",
     font=dict(
@@ -162,16 +158,12 @@ fig.update_layout(
                         )]
 )
 
-fig.show()
-
 fig.write_html('today_uv.html')
 fig.write_image('today_uv.jpg')
 
+sweetviz = sv.analyze(whole_df)
+sweetviz.show_html()
+
 airQuality.graph_forecast()
 
-
-answer = questionary.confirm("display analytics?").ask()
-
-if answer == True:
-    sweetviz = sv.analyze(whole_df)
-    sweetviz.show_html()
+fig.show()
