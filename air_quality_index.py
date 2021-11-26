@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import json
 from get_location import Location
+import keyring
 
 import plotly.express as px
 
@@ -12,7 +13,7 @@ class AirQualityAPI:
 
     def __init__(self, location):
         self.url = f'https://api.waqi.info/feed/'
-        self.token = 'fbfb1709e74b37c6f89dbd3e7adfe94aa02ea449'
+        self.token = keyring.get_password('Air Quality API','https://api.waqi.info/feed/')
 
         self.aqi_to_level = {range(0,50):       ['Good', 'rgb(68,204,0)'],
                              range(51,100):     ['Moderate','rgb(230,230,0)'],

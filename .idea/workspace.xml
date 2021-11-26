@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c2ebb668-c1c1-45c9-b1df-74789e76e81f" name="Default Changelist" comment="" />
+    <list default="true" id="c2ebb668-c1c1-45c9-b1df-74789e76e81f" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SWEETVIZ_REPORT.html" beforeDir="false" afterPath="$PROJECT_DIR$/SWEETVIZ_REPORT.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/air_quality_index.py" beforeDir="false" afterPath="$PROJECT_DIR$/air_quality_index.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/today_pollutants_forecast.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/today_pollutants_forecast.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/today_uv.html" beforeDir="false" afterPath="$PROJECT_DIR$/today_uv.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/today_uv.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/today_uv.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uv_index.py" beforeDir="false" afterPath="$PROJECT_DIR$/uv_index.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -83,8 +91,8 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.uv_index">
-    <configuration name="biased_diversity_form" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.air_quality_index">
+    <configuration name="air_quality_index" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="weather" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -92,11 +100,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/biased_diversity_form.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/air_quality_index.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -191,11 +199,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.air_quality_index" />
         <item itemvalue="Python.uv_index" />
         <item itemvalue="Python.get_location" />
         <item itemvalue="Python.records_in_a_log" />
         <item itemvalue="Python.scratch" />
-        <item itemvalue="Python.biased_diversity_form" />
       </list>
     </recent_temporary>
   </component>
@@ -232,7 +240,14 @@
       <option name="project" value="LOCAL" />
       <updated>1635908417292</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="removed api key and replaced with keyring">
+      <created>1635908653158</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1635908653159</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="ToolWindowManager">

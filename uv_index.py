@@ -9,9 +9,6 @@ from air_quality_index import AirQualityAPI
 
 import sweetviz as sv
 
-l = Location()
-ld = l.geolocation_dict
-
 
 class APIQuotaReachedException(Exception):
     pass
@@ -31,12 +28,12 @@ class UVIndexAPI:
 
     def set_token(self, new_token):
         '''
-        Token has a max of 50 calls per day.
-
-        Has the token expired?  Generate a new one and set it.
-        If this is a common occurrence, set the token as an external file.
+        Token has a max of 50 calls per day.  If needed, grab a new token from the service and
+        set Mac Keychain here.
         '''
-        self.token = new_token
+
+        keyring.set_password('OpenUV API Key','openuvapi', password=new_token)
+
 
     def set_location_and_altitude(self, latitude, longitude, altitude):
 
@@ -93,77 +90,80 @@ class UVIndexAPI:
         return self.get_forecasted_uv_indices()[self.get_forecasted_uv_indices()['uv'] < uv_max]
 
 
+if __name__ == '__main__':
+    l = Location()
+    ld = l.geolocation_dict
 
-uv = UVIndexAPI()
-uv.set_location_and_altitude(latitude=ld['latitude'], longitude=ld['longitude'], altitude=0)
-index = uv.get_uv_index()
-print(index)
+    uv = UVIndexAPI()
+    uv.set_location_and_altitude(latitude=ld['latitude'], longitude=ld['longitude'], altitude=0)
+    index = uv.get_uv_index()
+    print(index)
 
-whole_df = uv.get_forecasted_uv_indices()
-safe_times = uv.get_safe_times()
+    whole_df = uv.get_forecasted_uv_indices()
+    safe_times = uv.get_safe_times()
 
-DANGEROUS_UV, MODERATE_UV = 5, 3
+    DANGEROUS_UV, MODERATE_UV = 5, 3
 
-extended_cutoffs = whole_df[whole_df['uv'] > MODERATE_UV]
-strict_cutoffs = whole_df[whole_df['uv'] > DANGEROUS_UV]
+    extended_cutoffs = whole_df[whole_df['uv'] > MODERATE_UV]
+    strict_cutoffs = whole_df[whole_df['uv'] > DANGEROUS_UV]
 
-airQuality = AirQualityAPI(ld['city'])
-air_quality_index = airQuality.response['data']['aqi']
-air_quality_rating, air_quality_color = airQuality.get_health_rating()
+    airQuality = AirQualityAPI(ld['city'])
+    air_quality_index = airQuality.response['data']['aqi']
+    air_quality_rating, air_quality_color = airQuality.get_health_rating()
 
-fig = go.Figure(layout_yaxis_range=[0,11])
+    fig = go.Figure(layout_yaxis_range=[0,11])
 
-fig.add_trace(
-    go.Scatter(
-        mode='markers',
-        x=uv.get_forecasted_uv_indices().time,
-        y=uv.get_forecasted_uv_indices().uv,
-        marker=dict(
-            color='darkred',
-            size=20
-        ),
-        showlegend=False
+    fig.add_trace(
+        go.Scatter(
+            mode='markers',
+            x=uv.get_forecasted_uv_indices().time,
+            y=uv.get_forecasted_uv_indices().uv,
+            marker=dict(
+                color='darkred',
+                size=20
+            ),
+            showlegend=False
+        )
     )
-)
 
 
-fig.add_trace(
-    go.Scatter(
-        mode='markers',
-        x=safe_times.time,
-        y=safe_times.uv,
-        marker=dict(
-            color='rgb(51,85,255)',
-            size=[50 if x < MODERATE_UV else 10 for x in safe_times.uv]
-        ),
-        showlegend=False
+    fig.add_trace(
+        go.Scatter(
+            mode='markers',
+            x=safe_times.time,
+            y=safe_times.uv,
+            marker=dict(
+                color='rgb(51,85,255)',
+                size=[50 if x < MODERATE_UV else 10 for x in safe_times.uv]
+            ),
+            showlegend=False
+        )
     )
-)
 
-fig.update_layout(
-    title = f"UV over Time<br>City: {ld['city']}<br><b>{datetime.strftime(datetime.today(), '%d %b %Y')}</b>",
-    xaxis_title="Time",
-    yaxis_title="UV Index",
-    font=dict(
-        family="Courier New, monospace",
-        size=18,
-        color="RebeccaPurple"
-    ),
-    plot_bgcolor=air_quality_color,
-    annotations = [dict(xref='x',
-                        yref='y',
-                        x='12:00 AM', y=0.5,
-                        showarrow=False,
-                        text =f'Air Quality: <b>{air_quality_index}</b> <br>({air_quality_rating})'
-                        )]
-)
+    fig.update_layout(
+        title = f"UV over Time<br>City: {ld['city']}<br><b>{datetime.strftime(datetime.today(), '%d %b %Y')}</b>",
+        xaxis_title="Time",
+        yaxis_title="UV Index",
+        font=dict(
+            family="Courier New, monospace",
+            size=18,
+            color="RebeccaPurple"
+        ),
+        plot_bgcolor=air_quality_color,
+        annotations = [dict(xref='x',
+                            yref='y',
+                            x='12:00 AM', y=0.5,
+                            showarrow=False,
+                            text =f'Air Quality: <b>{air_quality_index}</b> <br>({air_quality_rating})'
+                            )]
+    )
 
-fig.write_html('today_uv.html')
-fig.write_image('today_uv.jpg')
+    fig.write_html('today_uv.html')
+    fig.write_image('today_uv.jpg')
 
-sweetviz = sv.analyze(whole_df)
-sweetviz.show_html()
+    sweetviz = sv.analyze(whole_df)
+    sweetviz.show_html()
 
-airQuality.graph_forecast()
+    airQuality.graph_forecast()
 
-fig.show()
+    fig.show()
